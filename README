@@ -1,0 +1,9 @@
+Timo's code has the following steps in microtimo_standard.py:
+
+1. get the most similar map (exact in integrated version)
+2. read LSST files
+3. get Rein
+4. get cmb velocity
+5. create source profiles
+6. calculate all velocities
+7. loop to extract light curves

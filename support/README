@@ -1,0 +1,10 @@
+The packages 'numpy' and 'matplotlib' are required to run these auxiliary programs.
+
+decompress.py:
+ Command line argument 1: the path to the input directory containing the compressed data.
+ Command line argument 2: (optional) the path to an existing directory where the decompressed data will be saved.
+ 	      	       	  If omitted, the decompressed data will be saved in the same directory as the input (argument 1).
+
+plot_lcurves.py:
+ Command line argument 1: the path to the directory containing the *decompressed* data.
+ 	      	       	  A new directory named 'plots' will be created inside this directory containing the plotted light curves.
