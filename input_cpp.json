@@ -13,27 +13,36 @@
 	"fedd": 0.1,
 	"eta": 0.1,
 	
+	"path_2_custom":'.',
 	"filenames":["u.fits","g.fits","r.fits","i.fits","z.fits","y.fits"],
 	"profPixSizePhys":[0.07722,0.07722,0.07722,0.07722,0.15444,0.15444]
     },
     "lrest":[1,2,3,4,5,6],
-    "times":[
-	[1,2,30,100],
-	[21,231,432],
-	[2,4,6,8,10,20,30,40,50,100,110],
-	[10,50,51,55,66],
-	[31,62,93,124,155,186,217,248,279,310],
-	[3,6,9,93,96,99,163,166,169]
-    ],
     "output":{
 	"Nlc": 10,
 	"seed": 123,
 	"full_data": false,
-	"degraded_data": true
+	"degraded_data": true,
+	"velocities": true,
+	"path_2_output": '.'
     },
     "maps":[
 	{"id":30685,"kappa":0.4,"gamma":0.4,"s":0.3,"mass":1}
     ],
     "Rein": 1.0,
-    "vtot": 1.0
+    "vel":{
+	"ra": 12.325,
+	"dec": -20.58,
+	"sigma_l": 250,
+	"sigma_s": 250,
+	"sigma_disp": 300,
+	"zl": 0.2,
+	"zs": 2.0,
+	"Dl": 1.0,
+	"Ds": 1.0,
+	"Dls": 1.0
+    },
+    "filters":['u','g','r','i','z','y'],
+    "path_2_dates": '.',
+    "years":10
 }

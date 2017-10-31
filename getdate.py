@@ -47,5 +47,102 @@ def getdate(outdir,path_to_dbfile,runName,ra,dec):
     asciitable.write({'JD': mags[:,0],'5sigmadepth': mags[:,1]},outDir+'/'+fname+".dat",names=['JD','5sigmadepth'])
 
     
-  return mags#'Fin'
+# return mags#'Fin'
+
+
+
+#read dates
+  u = np.loadtxt(outdir+'/dates/u.dat',skiprows=1)
+  g = np.loadtxt(outdir+'/dates/g.dat',skiprows=1)
+  r = np.loadtxt(outdir+'/dates/r.dat',skiprows=1)
+  i = np.loadtxt(outdir+'/dates/i.dat',skiprows=1)
+  z = np.loadtxt(outdir+'/dates/z.dat',skiprows=1)
+  y = np.loadtxt(outdir+'/dates/y.dat',skiprows=1)
+  zz = u.tolist()+g.tolist()+r.tolist()+i.tolist()+z.tolist()+y.tolist()
+  zz = sorted(zz, key=getKey)
+  
+  if len(u) == 0:
+    u = np.empty((1,2))
+    u[:] = np.NAN
+  if len(g) == 0:
+    g = np.empty((1,2))
+    g[:] = np.NAN
+  if len(r) == 0:
+    r = np.empty((1,2))
+    r[:] = np.NAN
+  if len(i) == 0:
+    i = np.empty((1,2))
+    i[:] = np.NAN
+  if len(z) == 0:
+    z = np.empty((1,2))
+    z[:] = np.NAN
+  if len(y) == 0:
+    y = np.empty((1,2))
+    y[:] = np.NAN
+	
+  days = lsst['years']*365.25
+
+  t1 = np.asarray(zz)[:,0]
+  tmin = min(t1)
+  tminplot = np.floor(tmin/1000.0)*1000.0
+
+  ut,gt,rt,it,zt,yt = (u[:,0]-tmin),g[:,0]-tmin,r[:,0]-tmin,i[:,0]-tmin,z[:,0]-tmin,y[:,0]-tmin
+  um,gm,rm,im,zm,ym = u[:,1],g[:,1],r[:,1],i[:,1],z[:,1],y[:,1]
+  tmax = max(t1)
+  
+  conditionu = ut <= days
+  conditiong = gt <= days
+  conditionr = rt <= days
+  conditioni = it <= days
+  conditionz = zt <= days
+  conditiony = yt <= days
+
+  ut,gt,rt,it,zt,yt = np.extract(conditionu,ut),np.extract(conditiong,gt),np.extract(conditionr,rt),np.extract(conditioni,it),np.extract(conditionz,zt),np.extract(conditiony,yt)
+  um,gm,rm,im,zm,ym = um[:len(ut)],gm[:len(gt)],rm[:len(rt)],im[:len(it)],zm[:len(zt)],ym[:len(yt)]
+	
+  if len(ut) == 0:
+    ut = np.empty(1)
+    ut[:] = np.NAN
+    um = np.empty(1)
+    um[:] = np.NAN
+  if len(gt) == 0:
+    gt = np.empty(1)
+    gt[:] = np.NAN
+    gm = np.empty(1)
+    gm[:] = np.NAN
+  if len(rt) == 0:
+    rt = np.empty(1)
+    rt[:] = np.NAN
+    rm = np.empty(1)
+    rm[:] = np.NAN
+  if len(it) == 0:
+    it = np.empty(1)
+    it[:] = np.NAN
+    im = np.empty(1)
+    im[:] = np.NAN
+  if len(zt) == 0:
+    zt = np.empty(1)
+    zt[:] = np.NAN
+    zm = np.empty(1)
+    zm[:] = np.NAN
+  if len(yt) == 0:
+    yt = np.empty(1)
+    yt[:] = np.NAN
+    ym = np.empty(1)
+    ym[:] = np.NAN
+	
+
+
+
+#velocity model
+
+#velocity correction
+  if other['vcmb'] == False: vcor = 0
+  if other['vcmb'] != False: vcor = veco(lsst['ra'],lsst['dec'])
+  print 'velocity correction: ',vcor[0],' Km/s'
+  print 'Einstein radius = ',RE,' meters'
+  lar = days #tmax - tmin
+  print lar,"LARGO"
+  time=lar*86400
+  lt=2.5*(10**13)
 

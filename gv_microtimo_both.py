@@ -37,98 +37,11 @@ def micro(outdir,source,magmap,lsst,other,output):
 
 
 
-	#read dates
-	u = np.loadtxt(outdir+'/dates/u.dat',skiprows=1)
-        g = np.loadtxt(outdir+'/dates/g.dat',skiprows=1)
-        r = np.loadtxt(outdir+'/dates/r.dat',skiprows=1)
-        i = np.loadtxt(outdir+'/dates/i.dat',skiprows=1)
-        z = np.loadtxt(outdir+'/dates/z.dat',skiprows=1)
-        y = np.loadtxt(outdir+'/dates/y.dat',skiprows=1)
-	zz = u.tolist()+g.tolist()+r.tolist()+i.tolist()+z.tolist()+y.tolist()
-	zz = sorted(zz, key=getKey)
-	
-	if len(u) == 0:
-                u = np.empty((1,2))
-                u[:] = np.NAN
-        if len(g) == 0:
-                g = np.empty((1,2))
-                g[:] = np.NAN
-        if len(r) == 0:
-                r = np.empty((1,2))
-                r[:] = np.NAN
-        if len(i) == 0:
-                i = np.empty((1,2))
-                i[:] = np.NAN
-        if len(z) == 0:
-                z = np.empty((1,2))
-                z[:] = np.NAN
-        if len(y) == 0:
-                y = np.empty((1,2))
-                y[:] = np.NAN
-	
-	days = lsst['years']*365.25
 
-	t1 = np.asarray(zz)[:,0]
-	tmin = min(t1)
-	tminplot = np.floor(tmin/1000.0)*1000.0
 
-	ut,gt,rt,it,zt,yt = (u[:,0]-tmin),g[:,0]-tmin,r[:,0]-tmin,i[:,0]-tmin,z[:,0]-tmin,y[:,0]-tmin
-	um,gm,rm,im,zm,ym = u[:,1],g[:,1],r[:,1],i[:,1],z[:,1],y[:,1]
-	tmax = max(t1)
-	
-	conditionu = ut <= days
-	conditiong = gt <= days
-	conditionr = rt <= days
-	conditioni = it <= days
-	conditionz = zt <= days
-	conditiony = yt <= days
-
-	ut,gt,rt,it,zt,yt = np.extract(conditionu,ut),np.extract(conditiong,gt),np.extract(conditionr,rt),np.extract(conditioni,it),np.extract(conditionz,zt),np.extract(conditiony,yt)
-	um,gm,rm,im,zm,ym = um[:len(ut)],gm[:len(gt)],rm[:len(rt)],im[:len(it)],zm[:len(zt)],ym[:len(yt)]
-	
-	if len(ut) == 0:
-		ut = np.empty(1)
-		ut[:] = np.NAN
-		um = np.empty(1)
-		um[:] = np.NAN
-        if len(gt) == 0:
-                gt = np.empty(1)
-                gt[:] = np.NAN
-                gm = np.empty(1)
-                gm[:] = np.NAN
-        if len(rt) == 0:
-                rt = np.empty(1)
-                rt[:] = np.NAN
-                rm = np.empty(1)
-                rm[:] = np.NAN
-        if len(it) == 0:
-                it = np.empty(1)
-                it[:] = np.NAN
-                im = np.empty(1)
-                im[:] = np.NAN
-        if len(zt) == 0:
-                zt = np.empty(1)
-                zt[:] = np.NAN
-                zm = np.empty(1)
-                zm[:] = np.NAN
-        if len(yt) == 0:
-                yt = np.empty(1)
-                yt[:] = np.NAN
-                ym = np.empty(1)
-                ym[:] = np.NAN
-	
 	#Calculus of Einstein radius
 	RE,DL,DS,DLS=Dis(other['zs'],other['zl'],magmap['mass'])
 
-	#velocity correction
-	if other['vcmb'] == False: vcor = 0
-	if other['vcmb'] != False: vcor = veco(lsst['ra'],lsst['dec'])
-	print 'velocity correction: ',vcor[0],' Km/s'
-	print 'Einstein radius = ',RE,' meters'
-	lar = days #tmax - tmin
-	print lar,"LARGO"
-	time=lar*86400
-	lt=2.5*(10**13)
 
 
 
@@ -195,56 +108,7 @@ def micro(outdir,source,magmap,lsst,other,output):
 	lim = 100
 	errlim = 0.05
 
-	while flag < lim:
-		#absolute value in case of saddle point image
-		veltable = [[],[],[],[],[],[],[],[]]
-		print output['numlc']
-		angvcor = np.arctan2(lsst['ra'],lsst['dec'])
-		squas   = (other['squas']*other['zs']/(1+other['zs']))**2
-		sgal    = ((other['sgal']*other['zl'])/(1+other['zl'])*DS/DL)**2
-		sdisp   = np.sqrt(2)*(np.random.uniform(0.8,1.3,int(output['numlc']))*other['sdisp']/(1+other['zl'])*(DS/DL))
-		vel     = np.abs(np.random.normal(0,(squas+sgal)**0.5,int(output['numlc'])))
-		angdisp = np.random.uniform(-pi,pi,int(output['numlc']))
-		angdisp2 = np.random.uniform(-pi,pi,int(output['numlc']))
-		angvcor = atan2(vcor[2],vcor[1])
-		angvcor = atan2(vcor[2],vcor[1])
-		vtotra  = np.sin(angdisp)*vel +np.sin(angdisp2)*sdisp+ np.sin(angvcor)*vcor[0]*DLS/((1+other['zl'])*DL)
-		vtotdec = np.cos(angdisp)*vel +np.cos(angdisp2)*sdisp+ np.cos(angvcor)*vcor[0]*DLS/((1+other['zl'])*DL)
-		vtot    = (vtotra**2 + vtotdec**2)**0.5
-		angcurve = np.arctan2(vtotra,vtotdec)
-		angrot = np.arctan2(lsst['dra'],lsst['ddec'])
-		ang    = angcurve - angrot
-		lar1 = (vtot)*time*(1000.0)/RE*(RES/WIDTH)
-		ranx = (lar1*np.cos(ang))
-		rany = (lar1*np.sin(ang))
-		x00  = np.random.uniform(0,1,int(output['numlc']))
-		y00  = np.random.uniform(0,1,int(output['numlc']))
-		veltable   = np.array([vel,angdisp,sdisp,angdisp2,vcor[0]*np.ones_like(vel),angvcor*np.ones_like(vel),vtot,ang]).T
-		lightcurve = np.zeros_like(lar1)
 
-		np.savetxt(outdir+'/output/veltable.dat',veltable,header="vpec angpec vdisp angdisp vcmb angcmb vtot angcurve")
-		np.savetxt(outdir+'/output/velocity.dat',veltable,header='distribution velocity	distribution angle	cmb velocity	cmb angle	total velocity	curve angle',delimiter='   ',fmt='%f')
-			
-		limitx1 = int(np.floor(0. + gausslimit))
-		limitx2 = int(np.ceil(10000 - gausslimit)+1)
-		limity1 = int(np.floor(0. + gausslimit))
-		limity2 = int(np.ceil(10000 - gausslimit)+1)
-		newdata = img[limitx1:limitx2,limity1:limity2]
-		
-		imx = limitx2 - limitx1 -1
-		imy = limity2 - limity1 -1
-	
-		errx = float(sum((imx-np.abs(ranx)) < 0.))/float(len(ranx))
-		erry = float(sum((imy-np.abs(rany)) < 0.))/float(len(rany))
-
-		if ((errx < errlim) and (errx > 0.)) or ((erry < errlim) and (erry > 0.)):
-                        flag += 1
-                        warnings.warn('WARNING: '+str(np.max(errx,erry)*100)+'% of the light curves did not fit in the pattern trying again')
-                elif errx >= errlim or erry >= errlim:
-                        warnings.warn('ERROR: more than 5% of the light curves did not fit in the pattern')
-                        sys.exit('ERROR: more than 5% of the light curves did not fit in the pattern')
-                else:
-                        flag = lim
 
 
 	startconv = pytime.clock()
