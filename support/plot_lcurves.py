@@ -29,7 +29,8 @@ for n,j in enumerate(m):
 	ax1.set_ylabel(r'$\Delta$'+' [mag]')
 	ax1.set_xlabel('pixel')
 	ax1.legend([r'$\sigma_u$', r'$\sigma_g$',r'$\sigma_r$',r'$\sigma_i$',r'$\sigma_z$',r'$\sigma_y$'], loc='upper right')
-	
+        ymin,ymax = ax1.get_ylim()
+
 	uu = np.loadtxt(u[n]).T
 	gg = np.loadtxt(g[n]).T
 	rr = np.loadtxt(r[n]).T
@@ -45,9 +46,13 @@ for n,j in enumerate(m):
 	ax2.errorbar(zz[0],zz[1],yerr=zz[2],fmt='m')
 	ax2.errorbar(yy[0],yy[1],yerr=yy[2],fmt='r')
 	ax2.invert_yaxis()
+        ax2.set_ylim(ymin,ymax)
 	ax2.set_ylabel(r'$\Delta$'+' [mag]')
 	ax2.set_xlabel('JD')
+        for tick in ax2.get_xticklabels():
+                tick.set_rotation(45)
 	ax2.legend([r'$\sigma_u$', r'$\sigma_g$',r'$\sigma_r$',r'$\sigma_i$',r'$\sigma_z$',r'$\sigma_y$'], loc='upper right')
 	
+        plt.tight_layout()
 	plt.savefig(indir+'plots/plot_'+str(n).zfill(4)+'.png')
 	plt.close('all')

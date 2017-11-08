@@ -98,47 +98,14 @@ int main(int argc,char* argv[]){
 
     // Output
     std::cout << "starting output" << std::endl;
-
-
-    // write uncompressed data
-    writeUncompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
-
-    /*
-    // Write sampled curves
-    for(int j=0;j<lsst.Nfilters;j++){
-      for(int i=0;i<mother.Ncurves;i++){
-	for(int k=0;k<all_filters_sampled_raw[j].lightCurves[i].Nsamples;k++){
-	  //all_filters_sampled_raw[j].lightCurves[i].t[k]  = all_filters_sampled_raw[j].lightCurves[i].t[k];
-	  all_filters_sampled_raw[j].lightCurves[i].t[k]  = lsst.tmin + all_filters_sampled_raw[j].lightCurves[i].t[k];
-	  all_filters_sampled_raw[j].lightCurves[i].m[k]  = lsst.errbase[j] - 2.5*log10(all_filters_sampled_raw[j].lightCurves[i].m[k]);
-	  all_filters_sampled_raw[j].lightCurves[i].dm[k] = m52snr(all_filters_sampled_raw[j].lightCurves[i].m[k]-lsst.depths[j][k]);
-	}
-      }
+    std::cout << "writing uncompressed data" << std::endl;
+    if( gen.full_data ){
+      writeUncompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
     }
-    for(int j=0;j<lsst.Nfilters;j++){
-      all_filters_sampled_raw[j].writeCurves(gen.path_2_output,"table"+lsst.filters[j]+"_");
+    std::cout << "writing degraded data" << std::endl;
+    if( gen.degraded_data ){
+      writeCompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
     }
-    
-    // Write theoretical curves
-    for(int i=0;i<mother.Ncurves;i++){
-      std::string full_file_name = gen.path_2_output + "tablet_" + std::to_string(i) + ".dat";
-      FILE* fh = fopen(full_file_name.c_str(),"w");
-      for(int k=0;k<all_filters_full_raw[0].lightCurves[i].Nsamples;k++){
-	fprintf(fh," %11.6e",(double)k);
-	for(int j=0;j<lsst.Nfilters;j++){
-	  fprintf(fh," %11.6e",lsst.errbase[j]-2.5*log10(all_filters_full_raw[j].lightCurves[i].m[k]));
-	  //fprintf(fh," %11.6e",all_filters_full_raw[j].lightCurves[i].m[k]);
-	}
-	fprintf(fh,"\n");
-      }
-      fclose(fh);
-    }
-    */
-
-
-
-
-    //writeCompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
   }
 
 

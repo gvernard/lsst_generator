@@ -52,7 +52,7 @@ public:
 
 double m52snr(double dm);
 std::vector<factoryProfilePars> createProfileParsFromInput(const std::string filename);
-void writeUncompressedData(std::string path,lsstParameters lsst,LightCurveCollection& mother,std::vector<LightCurveCollection>& full,std::vector<LightCurveCollection>& sampled);
-void writeCompressedData(std::string path,lsstParameters lsst,LightCurveCollection& mother,std::vector<LightCurveCollection>& full,std::vector<LightCurveCollection>& sampled);
+void writeUncompressedData(std::string path,lsstParameters lsst,LightCurveCollection& mother,const std::vector<LightCurveCollection>& full,const std::vector<LightCurveCollection>& sampled);
+void writeCompressedData(std::string path,lsstParameters lsst,LightCurveCollection& mother,const std::vector<LightCurveCollection>& full,const std::vector<LightCurveCollection>& sampled);
 
 #endif /* AUXILIARY_HPP */

@@ -5,96 +5,100 @@ import glob
 
 
 def get_values(fname,dtype,offset,size,mmin,mmax):
-    d = (mmax-mmin)/255.0
+    d = (mmax-mmin)/float(np.iinfo(np.dtype(dtype)).max)
     def f(x):
         return (d*x+mmin)
     g = np.vectorize(f)    
 
     fh = open(fname,'rb')
-    fh.seek(offset,os.SEEK_SET)
+    fh.seek(np.dtype(dtype).itemsize*offset,0)
     a = np.fromfile(fh,np.dtype(dtype),count=size)
-    return g(a)
-
-
-def get_days(fname,dtype,offset,size,daytolen,tmin):
-    def f(x):
-        return (tmin+x/daytolen)
-    g = np.vectorize(f)
-
-    fh = open(fname,'rb')
-    fh.seek(offset,os.SEEK_SET)
-    a = np.fromfile(fh,np.dtype(dtype),count=size)
+    fh.close()
     return g(a)
 
 
 # Beginning of the program
-
 indir  = sys.argv[1]
 if len(sys.argv) > 2:
     outdir = sys.argv[2]
 else:
     outdir = indir
-    
 
 indices = []
-dum = sorted(glob.glob(indir+'param_*.dat'))
+dum = sorted(glob.glob(indir+'comp_p_*.dat'))
 for d in dum:
     head,tail = os.path.split(d)
     name,ext  = os.path.splitext(tail)
     tmp       = name.split('_')
-    indices.append(tmp[1])
-
+    indices.append(tmp[2])
 
 
 
 for ind in indices:
-    pars  = np.loadtxt(indir+'param_'+ind+'.dat',skiprows=1)
-    sizes = pars[0].astype(int)
-    mins  = pars[1].astype(float)
-    maxs  = pars[2].astype(float)
+    with open(indir+'comp_p_'+ind+'.dat') as f:
+        content = f.readlines()
+        # you may also want to remove whitespace characters like `\n` at the end of each line
+        content = [x.strip() for x in content] 
+    sizes = map(int,content[0].split(' '))
 
-    with open(indir+'param_'+ind+'.dat','r') as f:
-        line = f.readline()
-    dum = line[2:].split(',')
-    daytolen = float(dum[0])
-    tmin     = float(dum[1])
-
-
-    Nt   = sizes[6]
-    mint = mins[6]
-    maxt = maxs[6]
-    u = get_values(indir+'compt_'+ind+'.bin','uint8',0*Nt,Nt,mint,maxt)
-    g = get_values(indir+'compt_'+ind+'.bin','uint8',1*Nt,Nt,mint,maxt)
-    r = get_values(indir+'compt_'+ind+'.bin','uint8',2*Nt,Nt,mint,maxt)
-    i = get_values(indir+'compt_'+ind+'.bin','uint8',3*Nt,Nt,mint,maxt)
-    z = get_values(indir+'compt_'+ind+'.bin','uint8',4*Nt,Nt,mint,maxt)
-    y = get_values(indir+'compt_'+ind+'.bin','uint8',5*Nt,Nt,mint,maxt)
-
-    theo = np.array([range(sizes[6]),u,g,r,i,z,y]).T
-    np.savetxt(outdir+'tablet_'+ind+'.dat',theo,delimiter="	",header="t	u	g	r	i	z	y")
-
-
-
-    uval = get_values(indir+'compf_'+ind+'.bin','uint8',0,sizes[0],mint,maxt)
-    gval = get_values(indir+'compf_'+ind+'.bin','uint8',sizes[0],sizes[1],mint,maxt)
-    rval = get_values(indir+'compf_'+ind+'.bin','uint8',sizes[0]+sizes[1],sizes[2],mint,maxt)
-    ival = get_values(indir+'compf_'+ind+'.bin','uint8',sizes[0]+sizes[1]+sizes[2],sizes[3],mint,maxt)
-    zval = get_values(indir+'compf_'+ind+'.bin','uint8',sizes[0]+sizes[1]+sizes[2]+sizes[3],sizes[4],mint,maxt)
-    yval = get_values(indir+'compf_'+ind+'.bin','uint8',sizes[0]+sizes[1]+sizes[2]+sizes[3]+sizes[4],sizes[5],mint,maxt)
-
-    uerr = get_values(indir+'compe_'+ind+'.bin','uint8',0,sizes[0],mins[0],maxs[0])
-    gerr = get_values(indir+'compe_'+ind+'.bin','uint8',sizes[0],sizes[1],mins[1],maxs[1])
-    rerr = get_values(indir+'compe_'+ind+'.bin','uint8',sizes[0]+sizes[1],sizes[2],mins[2],maxs[2])
-    ierr = get_values(indir+'compe_'+ind+'.bin','uint8',sizes[0]+sizes[1]+sizes[2],sizes[3],mins[3],maxs[3])
-    zerr = get_values(indir+'compe_'+ind+'.bin','uint8',sizes[0]+sizes[1]+sizes[2]+sizes[3],sizes[4],mins[4],maxs[4])
-    yerr = get_values(indir+'compe_'+ind+'.bin','uint8',sizes[0]+sizes[1]+sizes[2]+sizes[3]+sizes[4],sizes[5],mins[5],maxs[5])
+    dum = content[1].split(' ')
+    mytypes = []
+    for item in dum:
+        item = item.strip('\'')
+        if item == 't':
+            mytypes.append('uint16')
+        elif item == 'h':
+            mytypes.append('uint8')
+    dtypem = mytypes[0]
+    dtypet = mytypes[1]
+    dtypee = mytypes[2]
     
-    uday = get_days(indir+'compl_'+ind+'.bin','uint16',0,sizes[0],daytolen,tmin)
-    gday = get_days(indir+'compl_'+ind+'.bin','uint16',2*sizes[0],sizes[1],daytolen,tmin)
-    rday = get_days(indir+'compl_'+ind+'.bin','uint16',2*(sizes[0]+sizes[1]),sizes[2],daytolen,tmin)
-    iday = get_days(indir+'compl_'+ind+'.bin','uint16',2*(sizes[0]+sizes[1]+sizes[2]),sizes[3],daytolen,tmin)
-    zday = get_days(indir+'compl_'+ind+'.bin','uint16',2*(sizes[0]+sizes[1]+sizes[2]+sizes[3]),sizes[4],daytolen,tmin)
-    yday = get_days(indir+'compl_'+ind+'.bin','uint16',2*(sizes[0]+sizes[1]+sizes[2]+sizes[3]+sizes[4]),sizes[5],daytolen,tmin)
+    dum = content[2].split(' ')
+    minm = float(dum[0])
+    maxm = float(dum[1])
+    dum = content[3].split(' ')
+    mint = float(dum[0])
+    maxt = float(dum[1])
+    dum = content[4].split(' ')
+    mine = float(dum[0])
+    maxe = float(dum[1])
+
+
+    Nt   = sizes[6]/6
+    u = get_values(indir+'comp_f_'+ind+'.bin',dtypem,0*Nt,Nt,minm,maxm)
+    g = get_values(indir+'comp_f_'+ind+'.bin',dtypem,1*Nt,Nt,minm,maxm)
+    r = get_values(indir+'comp_f_'+ind+'.bin',dtypem,2*Nt,Nt,minm,maxm)
+    i = get_values(indir+'comp_f_'+ind+'.bin',dtypem,3*Nt,Nt,minm,maxm)
+    z = get_values(indir+'comp_f_'+ind+'.bin',dtypem,4*Nt,Nt,minm,maxm)
+    y = get_values(indir+'comp_f_'+ind+'.bin',dtypem,5*Nt,Nt,minm,maxm)
+
+    theo = np.array([range(Nt),u,g,r,i,z,y]).T
+    #np.savetxt(outdir+'tablet_'+ind+'.dat',theo,delimiter="	",header="t	u	g	r	i	z	y")
+    np.savetxt(outdir+'tablet_'+ind+'.dat',theo,delimiter=" ")
+
+
+
+
+    uval = get_values(indir+'comp_m_'+ind+'.bin',dtypem,0,sizes[0],minm,maxm)
+    gval = get_values(indir+'comp_m_'+ind+'.bin',dtypem,sizes[0],sizes[1],minm,maxm)
+    rval = get_values(indir+'comp_m_'+ind+'.bin',dtypem,sizes[0]+sizes[1],sizes[2],minm,maxm)
+    ival = get_values(indir+'comp_m_'+ind+'.bin',dtypem,sizes[0]+sizes[1]+sizes[2],sizes[3],minm,maxm)
+    zval = get_values(indir+'comp_m_'+ind+'.bin',dtypem,sizes[0]+sizes[1]+sizes[2]+sizes[3],sizes[4],minm,maxm)
+    yval = get_values(indir+'comp_m_'+ind+'.bin',dtypem,sizes[0]+sizes[1]+sizes[2]+sizes[3]+sizes[4],sizes[5],minm,maxm)
+
+    uerr = get_values(indir+'comp_e_'+ind+'.bin',dtypee,0,sizes[0],mine,maxe)
+    gerr = get_values(indir+'comp_e_'+ind+'.bin',dtypee,sizes[0],sizes[1],mine,maxe)
+    rerr = get_values(indir+'comp_e_'+ind+'.bin',dtypee,sizes[0]+sizes[1],sizes[2],mine,maxe)
+    ierr = get_values(indir+'comp_e_'+ind+'.bin',dtypee,sizes[0]+sizes[1]+sizes[2],sizes[3],mine,maxe)
+    zerr = get_values(indir+'comp_e_'+ind+'.bin',dtypee,sizes[0]+sizes[1]+sizes[2]+sizes[3],sizes[4],mine,maxe)
+    yerr = get_values(indir+'comp_e_'+ind+'.bin',dtypee,sizes[0]+sizes[1]+sizes[2]+sizes[3]+sizes[4],sizes[5],mine,maxe)
+    
+    uday = get_values(indir+'comp_t_'+ind+'.bin',dtypet,0,sizes[0],mint,maxt)
+    gday = get_values(indir+'comp_t_'+ind+'.bin',dtypet,sizes[0],sizes[1],mint,maxt)
+    rday = get_values(indir+'comp_t_'+ind+'.bin',dtypet,sizes[0]+sizes[1],sizes[2],mint,maxt)
+    iday = get_values(indir+'comp_t_'+ind+'.bin',dtypet,sizes[0]+sizes[1]+sizes[2],sizes[3],mint,maxt)
+    zday = get_values(indir+'comp_t_'+ind+'.bin',dtypet,sizes[0]+sizes[1]+sizes[2]+sizes[3],sizes[4],mint,maxt)
+    yday = get_values(indir+'comp_t_'+ind+'.bin',dtypet,sizes[0]+sizes[1]+sizes[2]+sizes[3]+sizes[4],sizes[5],mint,maxt)
     
     ufilter = np.array([uday,uval,uerr]).T
     gfilter = np.array([gday,gval,gerr]).T
@@ -103,13 +107,12 @@ for ind in indices:
     zfilter = np.array([zday,zval,zerr]).T
     yfilter = np.array([yday,yval,yerr]).T
 
-    np.savetxt(outdir+'tableu_'+ind+'.dat',ufilter,delimiter="	",header="JD	u	uerr",fmt='%10.3f')
-    np.savetxt(outdir+'tableg_'+ind+'.dat',gfilter,delimiter="	",header="JD	g	gerr",fmt='%10.3f')
-    np.savetxt(outdir+'tabler_'+ind+'.dat',rfilter,delimiter="	",header="JD	r	rerr",fmt='%10.3f')
-    np.savetxt(outdir+'tablei_'+ind+'.dat',ifilter,delimiter="	",header="JD	i	ierr",fmt='%10.3f')
-    np.savetxt(outdir+'tablez_'+ind+'.dat',zfilter,delimiter="	",header="JD	z	zerr",fmt='%10.3f')
-    np.savetxt(outdir+'tabley_'+ind+'.dat',yfilter,delimiter="	",header="JD	y	yerr",fmt='%10.3f')
-
+    np.savetxt(outdir+'tableu_'+ind+'.dat',ufilter,delimiter=" ",fmt='%12.6e')
+    np.savetxt(outdir+'tableg_'+ind+'.dat',gfilter,delimiter=" ",fmt='%12.6e')
+    np.savetxt(outdir+'tabler_'+ind+'.dat',rfilter,delimiter=" ",fmt='%12.6e')
+    np.savetxt(outdir+'tablei_'+ind+'.dat',ifilter,delimiter=" ",fmt='%12.6e')
+    np.savetxt(outdir+'tablez_'+ind+'.dat',zfilter,delimiter=" ",fmt='%12.6e')
+    np.savetxt(outdir+'tabley_'+ind+'.dat',yfilter,delimiter=" ",fmt='%12.6e')
 
 
 
