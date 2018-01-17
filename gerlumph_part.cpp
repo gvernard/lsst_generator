@@ -66,6 +66,7 @@ int main(int argc,char* argv[]){
     EffectiveMap emap(profMaxOffset,&map);
     Kernel kernel(map.Nx,map.Ny);
 
+
     // Set light curves
     std::cout << "setting light curves" << std::endl;
     LightCurveCollection mother(gen.Nlc,&emap);
