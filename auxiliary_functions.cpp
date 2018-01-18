@@ -153,19 +153,16 @@ void writeUncompressedData(std::string path,lsstParameters lsst,LightCurveCollec
   for(int j=0;j<lsst.Nfilters;j++){
     LightCurveCollection sample;
     sample.Ncurves = mother.Ncurves;
-    sample.lightCurves = (LightCurve*) malloc(sample.Ncurves*sizeof(LightCurve));
+    sample.lightCurves = new LightCurve*[sample.Ncurves];
     sample.A = (point*) malloc(sample.Ncurves*sizeof(point)); // just because the destructor complains when there is no pointer to A or B to delete
     sample.B = (point*) malloc(sample.Ncurves*sizeof(point));
     for(int i=0;i<mother.Ncurves;i++){
-      int Nsamples = sampled[j].lightCurves[i].Nsamples;
-      sample.lightCurves[i].Nsamples = Nsamples;
-      sample.lightCurves[i].t  = (double*) malloc(Nsamples*sizeof(double));
-      sample.lightCurves[i].m  = (double*) malloc(Nsamples*sizeof(double));
-      sample.lightCurves[i].dm = (double*) malloc(Nsamples*sizeof(double));
+      int Nsamples = sampled[j].lightCurves[i]->Nsamples;
+      sample.lightCurves[i] = new LightCurve(Nsamples);
       for(int k=0;k<Nsamples;k++){
-	sample.lightCurves[i].t[k]  = lsst.tmin + sampled[j].lightCurves[i].t[k];
-	sample.lightCurves[i].m[k]  = lsst.errbase[j] - 2.5*log10(sampled[j].lightCurves[i].m[k]);
-	sample.lightCurves[i].dm[k] = m52snr(sample.lightCurves[i].m[k]-lsst.depths[j][k]);
+	sample.lightCurves[i]->t[k]  = lsst.tmin + sampled[j].lightCurves[i]->t[k];
+	sample.lightCurves[i]->m[k]  = lsst.errbase[j] - 2.5*log10(sampled[j].lightCurves[i]->m[k]);
+	sample.lightCurves[i]->dm[k] = m52snr(sample.lightCurves[i]->m[k]-lsst.depths[j][k]);
       }
     }
     sample.writeCurves(path,"table"+lsst.filters[j]+"_");
@@ -175,10 +172,10 @@ void writeUncompressedData(std::string path,lsstParameters lsst,LightCurveCollec
   for(int i=0;i<mother.Ncurves;i++){
     std::string full_file_name = path + "tablet_" + std::to_string(i) + ".dat";
     FILE* fh = fopen(full_file_name.c_str(),"w");
-    for(int k=0;k<full[0].lightCurves[i].Nsamples;k++){
+    for(int k=0;k<full[0].lightCurves[i]->Nsamples;k++){
       fprintf(fh," %11.6e",(double)k);
       for(int j=0;j<lsst.Nfilters;j++){
-	fprintf(fh," %11.6e",lsst.errbase[j]-2.5*log10(full[j].lightCurves[i].m[k]));
+	fprintf(fh," %11.6e",lsst.errbase[j]-2.5*log10(full[j].lightCurves[i]->m[k]));
       }
       fprintf(fh,"\n");
     }
@@ -191,23 +188,22 @@ void writeCompressedData(std::string path,lsstParameters lsst,LightCurveCollecti
   std::vector<int> Nfull(mother.Ncurves);
   LightCurveCollection all_filters_full = mother;
   for(int i=0;i<mother.Ncurves;i++){
-    Nfull[i] = full[0].lightCurves[i].Nsamples;
+    Nfull[i] = full[0].lightCurves[i]->Nsamples;
     int Ntot = Nfull[i]*lsst.Nfilters;
     
-    all_filters_full.lightCurves[i].Nsamples = Ntot;
-    all_filters_full.lightCurves[i].m  = (double*) malloc(Ntot*sizeof(double));
-    all_filters_full.lightCurves[i].t  = (double*) calloc(Ntot,sizeof(double)); // need to be set to zero otherwise i get error when writing
-    all_filters_full.lightCurves[i].dm = (double*) calloc(Ntot,sizeof(double)); // need to be set to zero otherwise i get error when writing
+    all_filters_full.lightCurves[i] = new LightCurve(Ntot);
     int start = 0;
     for(int j=0;j<lsst.Nfilters;j++){
-      for(int k=start;k<Ntot;k++){
-	all_filters_full.lightCurves[i].m[k] = lsst.errbase[j] - 2.5*log10( full[j].lightCurves[i].m[k-start] );
+      //      for(int k=start;k<Ntot;k++){
+      for(int k=start;k<start+Nfull[i];k++){
+	all_filters_full.lightCurves[i]->m[k] = lsst.errbase[j] - 2.5*log10( full[j].lightCurves[i]->m[k-start] );
       }
       start += Nfull[i];
     }
   }
   all_filters_full.writeCurvesDegraded<unsigned char>(path,"");
   
+
 
   std::string line1,line2,line3,line4,line5;
   std::vector<std::string> theo_limits;
@@ -221,6 +217,7 @@ void writeCompressedData(std::string path,lsstParameters lsst,LightCurveCollecti
   }
 
 
+
   std::vector<int> Nf(lsst.Nfilters);
   for(int j=0;j<lsst.Nfilters;j++){
     Nf[j] = lsst.times[j].size();
@@ -229,17 +226,14 @@ void writeCompressedData(std::string path,lsstParameters lsst,LightCurveCollecti
   LightCurveCollection all_filters_sampled = mother;
   for(int i=0;i<mother.Ncurves;i++){
     //    std::cout << " >>>>>>>>>>>>>> " << i << std::endl;
-    all_filters_sampled.lightCurves[i].Nsamples = Ntot;
-    all_filters_sampled.lightCurves[i].t  = (double*) malloc(Ntot*sizeof(double));
-    all_filters_sampled.lightCurves[i].m  = (double*) malloc(Ntot*sizeof(double));
-    all_filters_sampled.lightCurves[i].dm = (double*) malloc(Ntot*sizeof(double));
+    all_filters_sampled.lightCurves[i] = new LightCurve(Ntot);
     int start = 0;
     for(int j=0;j<lsst.Nfilters;j++){
       //      std::cout << " >>>>>>>>>>>>>> filter " << j << std::endl;
       for(int k=0;k<Nf[j];k++){
-	all_filters_sampled.lightCurves[i].t[start + k]  = lsst.tmin + sampled[j].lightCurves[i].t[k];
-	all_filters_sampled.lightCurves[i].m[start + k]  = lsst.errbase[j] - 2.5*log10( sampled[j].lightCurves[i].m[k] );
-	all_filters_sampled.lightCurves[i].dm[start + k] = m52snr( all_filters_sampled.lightCurves[i].m[start + k] - lsst.depths[j][k] );
+	all_filters_sampled.lightCurves[i]->t[start + k]  = lsst.tmin + sampled[j].lightCurves[i]->t[k];
+	all_filters_sampled.lightCurves[i]->m[start + k]  = lsst.errbase[j] - 2.5*log10( sampled[j].lightCurves[i]->m[k] );
+	all_filters_sampled.lightCurves[i]->dm[start + k] = m52snr( all_filters_sampled.lightCurves[i]->m[start + k] - lsst.depths[j][k] );
 	//	std::cout << all_filters_sampled.lightCurves[i].m[k] << std::endl;
       }
       start += Nf[j];
@@ -248,6 +242,7 @@ void writeCompressedData(std::string path,lsstParameters lsst,LightCurveCollecti
   all_filters_sampled.writeCurvesDegraded<unsigned char,unsigned short int,unsigned char>(path,"");
   //all_filters_sampled.writeCurvesDegraded<unsigned short int,unsigned short int,unsigned short int>(path,"");
   
+
 
   // Read and overwrite params.dat files
   std::string basic;

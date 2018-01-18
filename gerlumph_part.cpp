@@ -96,17 +96,18 @@ int main(int argc,char* argv[]){
     std::cout << "convolutions done" << std::endl;
 
 
-
     // Output
     std::cout << "starting output" << std::endl;
-    std::cout << "writing uncompressed data" << std::endl;
     if( gen.full_data ){
+      std::cout << "writing uncompressed data" << std::endl;
       writeUncompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
     }
-    std::cout << "writing degraded data" << std::endl;
     if( gen.degraded_data ){
+      std::cout << "writing degraded data" << std::endl;
       writeCompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
     }
+
+
   }
 
 
