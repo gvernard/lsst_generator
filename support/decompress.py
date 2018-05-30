@@ -8,7 +8,8 @@ def get_values(fname,dtype,offset,size,mmin,mmax):
     d = (mmax-mmin)/float(np.iinfo(np.dtype(dtype)).max)
     def f(x):
         return (d*x+mmin)
-    g = np.vectorize(f)    
+    #g = np.vectorize(f)    
+    g = np.vectorize(f,otypes=[np.float])
 
     fh = open(fname,'rb')
     fh.seek(np.dtype(dtype).itemsize*offset,0)
