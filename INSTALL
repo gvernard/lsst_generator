@@ -1,21 +1,17 @@
 Instructions to make Timo's code run
 
-Add this under channels in .condarc:
-  - http://eupsforge.net/conda/dev
-
 conda create -p /lustre/projects/p001_swin/gvernardos/lsst_python_env/lsst_env python=2.7
 
 source activate /lustre/projects/p001_swin/gvernardos/lsst_python_env/lsst_env
 [There is a local cache in ~/anaconda/pkgs. You can also configure it to be anywhere you want by setting the envs_dirs option in your .condarc.]
 
-conda config --add channels http://eupsforge.net/conda/dev 
-conda remove conda-build
-conda remove conda-env
-conda update anaconda
+conda config --add channels http://conda.lsst.codes/sims
 conda install lsst-sims-maf
-conda install -c ska asciitable=0.8.0
-conda install matplotlib
+conda install astropy
 
+TO UPDATE:
+
+conda update lsst-sims-maf
 
 TO RUN THE CODE DO:
 

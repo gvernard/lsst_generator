@@ -2,8 +2,6 @@ import json
 import sys
 import numpy
 import random
-import asciitable
-import healpy as hp
 import lsst.sims.maf.db as db
 import lsst.sims.maf.utils as utils
 import lsst.sims.maf.metrics as metrics
@@ -77,8 +75,7 @@ for fname in filters:
     mags=numpy.array(mags)
     mags=numpy.transpose(mags)
     mags=mags[mags[:,0].argsort()]
-    asciitable.write({'JD': mags[:,0],'5sigmadepth': mags[:,1]},outDir+'/'+fname+".dat",names=['JD','5sigmadepth'])
-
+    numpy.savetxt(outDir+'/'+fname+".dat",header="JD   5-sigma-depth",numpy.c_[mags[:,0],mags[:1]])
 
 
 print ">>>>>>>>>>>>>>>>>> Write json input for the GERLUMPH part <<<<<<<<<<<<<<<<<<<<<<<"
