@@ -1,9 +1,24 @@
-Timo's code has the following steps in microtimo_standard.py:
+###### These are install instructions for the LSST packages                      ######
+###### Adapted from https://confluence.lsstcorp.org/display/SIM/Catalogs+and+MAF ######
 
-1. get the most similar map (exact in integrated version)
-2. read LSST files
-3. get Rein
-4. get cmb velocity
-5. create source profiles
-6. calculate all velocities
-7. loop to extract light curves
+Switch to the directory to install the packages and run:
+
+       curl -OL https://raw.githubusercontent.com/lsst/lsst/master/scripts/newinstall.sh
+       bash newinstall.sh -ct
+
+Answer 'yes' to install lsst's own python environment. And continue:
+
+       source loadLSST.bash
+       eups distrib install lsst_sims -t <sims_weekly_tag>
+       curl -sSL https://raw.githubusercontent.com/lsst/shebangtron/master/shebangtron | python
+       setup lsst_sims -t <sims_weekly_tag>
+
+An example of the <sims_weekly_tag> can be: sims_w_2019_14
+To run a program, I need to do the following beforehand:
+
+       source <my_lsst_environment>/loadLSST.bash
+       setup lsst_sims -t <sims_weekly_tag>
+       python <my_program>
+
+
+ALSO: this version of the code works with new Opsims (e.g. baseline2018a, etc), which have renamed a few fields in the database.
