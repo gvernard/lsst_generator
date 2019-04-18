@@ -50,7 +50,7 @@ Dls = cosmo.angular_diameter_distance_z1z2(myinput['other']['zl'],myinput['other
 
 print(">>>>>>>>>>>>>>>>>> Reading LSST dates and depths <<<<<<<<<<<<<<<<<<<<<")
 outDir = outdir+'/dates'
-dbFile = path_to_dbfile + runName + '_sqlite.db'
+dbFile = path_to_dbfile + runName + '.db'
 opsimdb = db.opsimDatabase.OpsimDatabase(dbFile)
 resultsDb = db.ResultsDb(outDir=outDir)
 
