@@ -20,7 +20,7 @@ lsstParameters::lsstParameters(const std::string filename){
     this->filters.push_back(filters[j].asString());
     std::vector<double> time;
     std::vector<double> depth;
-    std::ifstream date_file( path_2_dates + filters[j].asString() + ".dat" );
+    std::ifstream date_file( path_2_dates + filters[j].asString() + "_dates.dat" );
     std::getline(date_file,dum);
     while( date_file >> c1 >> c2 ){
       time.push_back(c1);
@@ -265,5 +265,46 @@ void writeCompressedData(std::string path,lsstParameters lsst,LightCurveCollecti
     out.close();
   }
 
+
+}
+
+void writeUncompressedDataNew(std::string path,lsstParameters lsst,LightCurveCollection& mother,const std::vector<LightCurveCollection>& full,const std::vector<LightCurveCollection>& sampled){
+
+  // Write sampled curves
+  for(int j=0;j<lsst.Nfilters;j++){
+    std::string filter_mag = path + "filter_"+lsst.filters[j]+"_mag.dat";
+    FILE* fh_filter_mag = fopen(filter_mag.c_str(),"w");
+    std::string filter_dmag = path + "filter_"+lsst.filters[j]+"_dmag.dat";
+    FILE* fh_filter_dmag = fopen(filter_dmag.c_str(),"w");
+    
+    for(int i=0;i<mother.Ncurves;i++){
+      for(int k=0;k<sampled[j].lightCurves[0]->Nsamples;k++){
+	fprintf(fh_filter_mag,"%13.6e",lsst.errbase[j] - 2.5*log10(sampled[j].lightCurves[i]->m[k]));
+	fprintf(fh_filter_dmag,"%13.6e",m52snr(sampled[j].lightCurves[i]->m[k]-lsst.depths[j][k]));
+      }
+      fprintf(fh_filter_mag,"\n");
+      fprintf(fh_filter_dmag,"\n");
+    }
+  }
+
+  // Write length of theoretical light curves
+  std::string theo_length = path + "theo_length.dat";
+  FILE* fh_len = fopen(theo_length.c_str(),"w");
+  for(int i=0;i<mother.Ncurves;i++){
+    fprintf(fh_len,"%d\n",full[0].lightCurves[i]->Nsamples);
+  }
+
+  // Write theoretical curves
+  std::string theo_mag = path + "theo_mag.dat";
+  FILE* fh_mag = fopen(theo_mag.c_str(),"w");
+  for(int i=0;i<mother.Ncurves;i++){
+    for(int k=0;k<full[0].lightCurves[i]->Nsamples;k++){
+      for(int j=0;j<lsst.Nfilters;j++){
+	fprintf(fh_mag," %13.6e",lsst.errbase[j]-2.5*log10(full[j].lightCurves[i]->m[k]));
+      }
+      fprintf(fh_mag,"\n");
+    }
+  }
+  fclose(fh_mag);
 
 }

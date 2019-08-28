@@ -2,6 +2,7 @@ import json
 import sys
 import numpy
 import random
+import os
 
 import lsst.sims.maf.db as db
 import lsst.sims.maf.metrics as metrics
@@ -49,7 +50,7 @@ Dls = cosmo.angular_diameter_distance_z1z2(myinput['other']['zl'],myinput['other
 
 
 print(">>>>>>>>>>>>>>>>>> Reading LSST dates and depths <<<<<<<<<<<<<<<<<<<<<")
-outDir = outdir+'/dates'
+outDir = outdir + '/output'
 dbFile = path_to_dbfile + runName + '.db'
 opsimdb = db.opsimDatabase.OpsimDatabase(dbFile)
 resultsDb = db.ResultsDb(outDir=outDir)
@@ -75,7 +76,12 @@ for fname in filters:
     mags=numpy.array(mags)
     mags=numpy.transpose(mags)
     mags=mags[mags[:,0].argsort()]
-    numpy.savetxt(outDir+'/'+fname+".dat",numpy.c_[mags[:,0],mags[:,1]],header="JD   5-sigma-depth")
+    numpy.savetxt(outDir+'/'+fname+"_dates.dat",numpy.c_[mags[:,0],mags[:,1]],header="JD   5-sigma-depth")
+
+
+# These two files are generated somewhere above but it is hard to find where, they are not used in any way though.
+os.remove(outDir+"/resultsDb_sqlite.db")
+os.remove(outDir+"/opsim_Pass_filter_fiveSigmaDepth_observationStartMJD_USER.npz")
 
 
 print(">>>>>>>>>>>>>>>>>> Write json input for the GERLUMPH part <<<<<<<<<<<<")
@@ -108,7 +114,7 @@ out["vel"]["Dls"] = Dls
 
 out["filters"] = filters
 
-out["path_2_dates"]  = myinput["path_to_out"] + str(myinput["outdir"]) + "/dates/"
+out["path_2_dates"]  = myinput["path_to_out"] + str(myinput["outdir"]) + "/output/"
 out["path_2_custom"] = myinput["path_to_out"] + str(myinput["outdir"]) + "/custom/"
 out["path_2_output"] = myinput["path_to_out"] + str(myinput["outdir"]) + "/output/"
 

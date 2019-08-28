@@ -100,12 +100,19 @@ int main(int argc,char* argv[]){
     std::cout << "starting output" << std::endl;
     if( gen.full_data ){
       std::cout << "writing uncompressed data" << std::endl;
-      writeUncompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
+      //      writeUncompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
+      writeUncompressedDataNew(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
     }
     if( gen.degraded_data ){
       std::cout << "writing degraded data" << std::endl;
       writeCompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
     }
+    FILE* fh = fopen((gen.path_2_output+"time_and_length.dat").c_str(),"w");
+    fprintf(fh,"%15s: %13.6e [%15s]\n","pixel size",map.pixSizePhys,"x10^14cm");
+    fprintf(fh,"%15s: %13.6e [%15s]\n","Rein",Rein,"x10^14cm");
+    fprintf(fh,"%15s: %13.6e [%15s]\n","time0",lsst.tmin,"MJD");
+    fprintf(fh,"%15s: %13.6e [%15s]\n","duration",lsst.tmax,"days");
+    fclose(fh);
 
 
   }
