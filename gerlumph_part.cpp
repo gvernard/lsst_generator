@@ -5,6 +5,8 @@
 #include <numeric>
 #include <fstream>
 
+#include "json/json.h"
+
 #include "gerlumph.hpp"
 #include "auxiliary_functions.hpp"
 
@@ -33,7 +35,7 @@ int main(int argc,char* argv[]){
   // Set the velocities
   velocityParameters vp(json_input_filename);
   velocityComponents vel(gen.Nlc);
-  vel.createVelocitiesK04(321,vp.ra,vp.dec,vp.sigma_l,vp.sigma_s,vp.sigma_disp,vp.zl,vp.zs,vp.Dl,vp.Ds,vp.Dls);
+  vel.createVelocitiesK04(321,vp.ra,vp.dec,vp.sigma_l,vp.sigma_s,vp.sigma_disp,vp.epsilon,vp.zl,vp.zs,vp.Dl,vp.Ds,vp.Dls);
   if( gen.velocities ){
     vel.writeVelocities(gen.path_2_output+"velocities.dat");
   }
@@ -56,11 +58,14 @@ int main(int argc,char* argv[]){
     MagnificationMap map(gen.ids[ii],Rein);
 
     // Profile loop: I need to define pixSizePhys (map dependent) for each profile before creating it
-    std::vector<BaseProfile*> profiles(lsst.Nfilters);
-    for(int j=0;j<lsst.Nfilters;j++){
-      profile_pars[j].pixSizePhys = map.pixSizePhys;
-      profiles[j] = FactoryProfile::getInstance()->createProfile(profile_pars[j]);
-    }
+    //std::vector<BaseProfile*> profiles(lsst.Nfilters);
+    //for(int j=0;j<lsst.Nfilters;j++){
+    //  profile_pars[j].pixSizePhys = map.pixSizePhys;
+    //  profiles[j] = FactoryProfile::getInstance()->createProfile(profile_pars[j]);
+    //}
+    std::vector<BaseProfile*> profiles = createProfilesFromInput(json_input_filename,map.pixSizePhys);
+
+
 
     double profMaxOffset = profiles[lsst.Nfilters-1]->Nx/2;
     EffectiveMap emap(profMaxOffset,&map);

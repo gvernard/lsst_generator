@@ -1,3 +1,4 @@
+#######################################################################################
 ###### These are install instructions for the LSST packages                      ######
 ###### Adapted from https://confluence.lsstcorp.org/display/SIM/Catalogs+and+MAF ######
 
@@ -22,3 +23,20 @@ To run a program, I need to do the following beforehand:
 
 
 ALSO: this version of the code works with new Opsims (e.g. baseline2018a, etc), which have renamed a few fields in the database.
+
+
+##############################################################################
+###### These are install instructions for the gerlumph part of the code ######
+
+The main external library that needs to be installed is the gerlumph++ library found here:
+
+https://github.com/gvernard/gerlumphpp
+
+After installing this library (and exporting its paths to the shell environment) you only need the jsoncpp third-party library:
+
+https://github.com/open-source-parsers/jsoncpp
+
+That's it!
+Then just modify the $HERE variable in build.sh and run it:
+
+./build.sh

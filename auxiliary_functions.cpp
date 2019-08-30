@@ -90,6 +90,7 @@ velocityParameters::velocityParameters(const std::string filename){
   this->sigma_l    = vel["sigma_l"].asDouble();
   this->sigma_s    = vel["sigma_s"].asDouble();
   this->sigma_disp = vel["sigma_disp"].asDouble();
+  this->epsilon    = vel["epsi"].asDouble();
   this->zl         = vel["zl"].asDouble();
   this->zs         = vel["zs"].asDouble();
   this->Dl         = vel["Dl"].asDouble();
@@ -107,6 +108,65 @@ double m52snr(double dm){
   double snr = 5.0*pow(-0.4*dm,10);
   return 2.5*log10(1.0+1.0/snr);
 }
+
+std::vector<BaseProfile*> createProfilesFromInput(const std::string filename,double pixSizePhys){
+  Json::Value root;
+  std::ifstream fin(filename);
+  fin >> root;
+  
+  std::string profile_type  = root["profile"]["type"].asString();
+  std::string profile_shape = root["profile"]["shape"].asString();
+  double incl   = root["profile"]["incl"].asDouble();
+  double orient = root["profile"]["orient"].asDouble();
+  Json::Value lrest  = root["lrest"];
+  std::vector<BaseProfile*> profiles(lrest.size());
+
+  if( profile_type != "custom" ){
+    if( profile_type == "parametric" ){
+      for(int j=0;j<lrest.size();j++){
+	double l = lrest[j].asDouble();
+	double rhalf = root["profile"]["s0"].asDouble()*pow(l/root["profile"]["l0"].asDouble(),root["profile"]["n"].asDouble());
+	if( profile_shape == "uniform" ){
+	  profiles[j] = new UniformDisc(pixSizePhys,rhalf/0.707,incl,orient);
+	  //profiles[j] = new UniformDisc(pixSizePhys,rhalf,incl,orient);
+	} else if( profile_shape == "gaussian" ){
+	  profiles[j] = new Gaussian(pixSizePhys,rhalf/1.18,incl,orient);
+	  //profiles[j] = new Gaussian(pixSizePhys,rhalf,incl,orient);
+	}
+      }
+    } else if( profile_type == "ssdisc" ){
+      double b = pow(root["profile"]["mbh"].asDouble(),2.0);
+      double c = root["profile"]["fedd"].asDouble()/root["profile"]["eta"].asDouble();
+      for(int j=0;j<lrest.size();j++){
+	double l  = lrest[j].asDouble();
+	double a = pow(l,4.0);
+	double rhalf = 0.0097*pow(a*b*c,1.0/3.0); // in [10^14 cm]
+	if( profile_shape == "uniform" ){
+	  profiles[j] = new UniformDisc(pixSizePhys,rhalf/0.707,incl,orient);
+	} else if( profile_shape == "gaussian" ){
+	  profiles[j] = new Gaussian(pixSizePhys,rhalf/1.18,incl,orient);
+	}
+      }
+    }
+  } else {
+    factoryProfilePars custom_pars;
+    custom_pars.type   = profile_type;
+    custom_pars.shape  = profile_shape;
+    custom_pars.incl   = incl;
+    custom_pars.orient = orient;
+    custom_pars.pixSizePhys = pixSizePhys;
+    for(int j=0;j<lrest.size();j++){
+      custom_pars.lrest = lrest[j].asDouble();
+      custom_pars.filename = root["path_2_custom"].asString() + root["filters"][j].asString() + ".fits";
+      custom_pars.profPixSizePhys = root["profile"]["profPixSizePhys"][j].asDouble();
+      profiles[j] = FactoryProfile::getInstance()->createProfile(custom_pars);	
+    }
+  }
+
+  return profiles;
+}
+
+
 
 std::vector<factoryProfilePars> createProfileParsFromInput(const std::string filename){
   Json::Value root;

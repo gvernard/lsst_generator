@@ -41,6 +41,7 @@ public:
   double sigma_l;    // km/s
   double sigma_s;    // km/s
   double sigma_disp; // km/s
+  double epsilon;
   double zl;
   double zs;
   double Dl;
@@ -52,6 +53,7 @@ public:
 
 double m52snr(double dm);
 std::vector<factoryProfilePars> createProfileParsFromInput(const std::string filename);
+std::vector<BaseProfile*> createProfilesFromInput(const std::string filename,double pixSizePhys);
 void writeUncompressedData(std::string path,lsstParameters lsst,LightCurveCollection& mother,const std::vector<LightCurveCollection>& full,const std::vector<LightCurveCollection>& sampled);
 void writeUncompressedDataNew(std::string path,lsstParameters lsst,LightCurveCollection& mother,const std::vector<LightCurveCollection>& full,const std::vector<LightCurveCollection>& sampled);
 void writeCompressedData(std::string path,lsstParameters lsst,LightCurveCollection& mother,const std::vector<LightCurveCollection>& full,const std::vector<LightCurveCollection>& sampled);
