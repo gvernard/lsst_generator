@@ -45,7 +45,6 @@ int main(int argc,char* argv[]){
   for(int i=0;i<gen.Nlc;i++){
     vtot[i]     = vel.tot[i].v;
     phi_vtot[i] = vel.tot[i].phi;
-    
   }
   std::cout << "velocities ok" << std::endl;
 
@@ -67,10 +66,16 @@ int main(int argc,char* argv[]){
     std::vector<BaseProfile*> profiles = createProfilesFromInput(json_input_filename,map.pixSizePhys);
 
 
-
+    // set convolution kernel
     double profMaxOffset = profiles[lsst.Nfilters-1]->Nx/2;
     EffectiveMap emap(profMaxOffset,&map);
     Kernel kernel(map.Nx,map.Ny);
+
+
+    // Rotate map (i.e. rotate the velocity vectors in an opposite way)
+    for(int i=0;i<gen.Nlc;i++){
+      phi_vtot[i] -= gen.gamma_angle[i];
+    }
 
 
     // Set light curves

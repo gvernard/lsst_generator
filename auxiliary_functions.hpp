@@ -22,6 +22,7 @@ class genericParameters {
 public:
   std::vector<std::string> ids;
   std::vector<double> mass;
+  std::vector<double> gamma_angle;
   std::vector<double> lrest;    // in [nm]
   double Rein;
   int Nlc;

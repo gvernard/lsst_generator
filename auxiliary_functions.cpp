@@ -64,6 +64,7 @@ genericParameters::genericParameters(const std::string filename){
   for(int j=0;j<maps.size();j++){
     this->ids.push_back( maps[j]["id"].asString() );
     this->mass.push_back( maps[j]["mass"].asDouble() );
+    this->gamma_angle.push_back( maps[j]["gamma_angle"].asDouble() + 90.0 ); // convert directly from Position Angle (east of north) to a normal cartesian system
   }
   
   Json::Value lrest = root["lrest"];
