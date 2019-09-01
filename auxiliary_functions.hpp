@@ -52,6 +52,7 @@ public:
 };
 
 double m52snr(double dm);
+std::vector<double> calculateRhalf(const std::string filename);
 std::vector<factoryProfilePars> createProfileParsFromInput(const std::string filename);
 std::vector<BaseProfile*> createProfilesFromInput(const std::string filename,double pixSizePhys);
 void writeUncompressedData(std::string path,lsstParameters lsst,LightCurveCollection& mother,const std::vector<LightCurveCollection>& full,const std::vector<LightCurveCollection>& sampled);

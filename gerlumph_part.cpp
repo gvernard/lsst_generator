@@ -29,6 +29,7 @@ int main(int argc,char* argv[]){
 
   // Set the 6 LSST filter profiles
   std::vector<factoryProfilePars> profile_pars = createProfileParsFromInput(json_input_filename);
+  std::vector<double> rhalfs = calculateRhalf(json_input_filename);
   std::cout << "profile ok" << std::endl;
 
 
@@ -77,8 +78,18 @@ int main(int argc,char* argv[]){
     LightCurveCollection mother(gen.Nlc,&emap);
     mother.createVelocityLocations(213,lsst.tmax,vtot,phi_vtot);
     //mother.createRandomLocations(213,1000);
+    //    mother.A[0].x = 0;
+    //    mother.A[0].y = 0;
+    //    mother.B[0].x = 10000 - profMaxOffset;
+    //    mother.B[0].y = 10000 - profMaxOffset;
 
-
+    // Writing start and end points of each light curve on the magnification map
+    FILE* fh_points = fopen((gen.path_2_output+"xy_start_end.dat").c_str(),"w");
+    for(int i=0;i<mother.Ncurves;i++){
+      fprintf(fh_points,"%8.3f %8.3f %8.3f %8.3f\n",mother.A[i].x,mother.A[i].y,mother.B[i].x,mother.B[i].y);
+    }
+    fclose(fh_points);
+    std::cout << "Points written" << std::endl;
 
     // Convolution and extraction loop
     std::vector<LightCurveCollection> all_filters_full_raw;
@@ -112,14 +123,24 @@ int main(int argc,char* argv[]){
       std::cout << "writing degraded data" << std::endl;
       writeCompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
     }
-    FILE* fh = fopen((gen.path_2_output+"time_and_length.dat").c_str(),"w");
-    fprintf(fh,"%15s: %13.6e [%15s]\n","pixel size",map.pixSizePhys,"x10^14cm");
-    fprintf(fh,"%15s: %13.6e [%15s]\n","Rein",Rein,"x10^14cm");
-    fprintf(fh,"%15s: %13.6e [%15s]\n","time0",lsst.tmin,"MJD");
-    fprintf(fh,"%15s: %13.6e [%15s]\n","duration",lsst.tmax,"days");
-    fclose(fh);
 
-
+    // Write file with generic parameters, necessary to convert the x-values of the theoretical light curves to time
+    Json::Value out;
+    out["pixSizePhys"] = map.pixSizePhys; // in 10^14 cm
+    out["Rein"]        = Rein; // in 10^14 cm
+    out["time0"]       = lsst.tmin; // in MJD
+    out["duration"]    = lsst.tmax; // in days
+    out["offset"]      = profMaxOffset; // in pixels
+    out["profile_type"] = profile_pars[0].type;
+    Json::Value sizes = Json::Value(Json::arrayValue);
+    for(int j=0;j<lsst.Nfilters;j++){
+      sizes.append(rhalfs[j]);
+    }
+    out["r_half"] = sizes;
+    
+    std::ofstream jsonfile(gen.path_2_output+"parameters.json");
+    jsonfile << out;
+    jsonfile.close();
   }
 
 

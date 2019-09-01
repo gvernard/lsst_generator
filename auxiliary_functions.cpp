@@ -109,6 +109,37 @@ double m52snr(double dm){
   return 2.5*log10(1.0+1.0/snr);
 }
 
+std::vector<double> calculateRhalf(const std::string filename){
+  Json::Value root;
+  std::ifstream fin(filename);
+  fin >> root;
+
+  std::vector<double> rhalfs;
+  std::string profile_type = root["profile"]["type"].asString();
+  if( profile_type == "parametric" ){
+    double s0 = root["profile"]["s0"].asDouble();
+    for(int j=0;j<root["lrest"].size();j++){
+      double r = s0*pow(root["lrest"][j].asDouble()/root["profile"]["l0"].asDouble(),root["profile"]["n"].asDouble());
+      rhalfs.push_back(r);
+    }
+  } else if( profile_type == "ssdisc" ){
+    double b = pow(root["profile"]["mbh"].asDouble(),2.0);
+    double c = root["profile"]["fedd"].asDouble()/root["profile"]["eta"].asDouble();
+    for(int j=0;j<root["lrest"].size();j++){
+      double a = pow(root["lrest"][j].asDouble(),4.0);
+      double r = 0.0097*pow(a*b*c,1.0/3.0); // in [10^14 cm]
+      rhalfs.push_back(r);
+    }     
+  } else {
+    for(int j=0;j<root["lrest"].size();j++){
+      rhalfs.push_back(0);
+    }    
+  }
+
+  return rhalfs;
+}
+
+
 std::vector<BaseProfile*> createProfilesFromInput(const std::string filename,double pixSizePhys){
   Json::Value root;
   std::ifstream fin(filename);
