@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import numpy as np
 
 # INPUT
@@ -26,14 +27,14 @@ filters = ['u','g','r','i','z','y']
 
 
 # Get parameters for transforming the x-values of the continuous light curves to time in MJD.
-f = open(target_dir+'time_and_length.dat',"r")
-lines = f.readlines()
-f.close()
-pix = float(lines[0].split(':')[1].split('[')[0].strip()) # pixel size [in 10^14 cm]
-t0  = float(lines[2].split(':')[1].split('[')[0].strip()) # beginning of the obsercations [in MJD]
+with open(target_dir+"parameters.json",'r') as f:
+    myjson = json.load(f)
+pix = float(myjson["pixSizePhys"]) # pixel size [in 10^14 cm]
+t0 = float(myjson["time0"]) # beginning of the obsercations [in MJD]
 vels = np.loadtxt(target_dir+'velocities.dat')
 vel  = vels[index,0] # effective velocity along the light curve trajectory in [km/s]
 t_interval = 11574*pix/vel # the time interval of the continuous light curves [in days]
+
 
 
 # Read the continuous light curve in all filters
