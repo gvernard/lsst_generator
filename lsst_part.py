@@ -106,6 +106,7 @@ out["vel"]["dec"]   = myinput["lsst"]["dec"]
 out["vel"]["sigma_l"]    = myinput["other"]["sgal"]
 out["vel"]["sigma_s"]    = myinput["other"]["squas"]
 out["vel"]["sigma_disp"] = myinput["other"]["sdisp"]
+out["vel"]["epsi"]       = myinput["other"]["epsi"]
 out["vel"]["zs"]  = myinput["other"]["zs"]
 out["vel"]["zl"]  = myinput["other"]["zl"]
 out["vel"]["Ds"]  = Ds
