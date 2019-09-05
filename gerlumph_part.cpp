@@ -64,7 +64,8 @@ int main(int argc,char* argv[]){
 
 
     // set convolution kernel
-    double profMaxOffset = profiles[lsst.Nfilters-1]->Nx/2;
+    int profMaxOffset = (int) ceil(profiles[lsst.Nfilters-1]->Nx/2);
+    //    int profMaxOffset = 1000;
     EffectiveMap emap(profMaxOffset,&map);
     Kernel kernel(map.Nx,map.Ny);
 
