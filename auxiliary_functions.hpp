@@ -27,9 +27,8 @@ public:
   double Rein;
   int Nlc;
   int seed;
-  bool full_data;
-  bool degraded_data;
   bool velocities;
+  bool start_end;
   std::string path_2_output;
 
   genericParameters(const std::string filename);

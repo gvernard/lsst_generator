@@ -37,9 +37,6 @@ int main(int argc,char* argv[]){
   velocityParameters vp(json_input_filename);
   velocityComponents vel(gen.Nlc);
   vel.createVelocitiesK04(321,vp.ra,vp.dec,vp.sigma_l,vp.sigma_s,vp.sigma_disp,vp.epsilon,vp.zl,vp.zs,vp.Dl,vp.Ds,vp.Dls);
-  if( gen.velocities ){
-    vel.writeVelocities(gen.path_2_output+"velocities.dat");
-  }
   std::vector<double> vtot(gen.Nlc);
   std::vector<double> phi_vtot(gen.Nlc);
   for(int i=0;i<gen.Nlc;i++){
@@ -88,13 +85,6 @@ int main(int argc,char* argv[]){
     //    mother.B[0].x = 10000 - profMaxOffset;
     //    mother.B[0].y = 10000 - profMaxOffset;
 
-    // Writing start and end points of each light curve on the magnification map
-    FILE* fh_points = fopen((gen.path_2_output+"xy_start_end.dat").c_str(),"w");
-    for(int i=0;i<mother.Ncurves;i++){
-      fprintf(fh_points,"%8.3f %8.3f %8.3f %8.3f\n",mother.A[i].x,mother.A[i].y,mother.B[i].x,mother.B[i].y);
-    }
-    fclose(fh_points);
-    std::cout << "Points written" << std::endl;
 
     // Convolution and extraction loop
     std::vector<LightCurveCollection> all_filters_full_raw;
@@ -119,14 +109,22 @@ int main(int argc,char* argv[]){
 
     // Output
     std::cout << "starting output" << std::endl;
-    if( gen.full_data ){
-      std::cout << "writing uncompressed data" << std::endl;
-      //      writeUncompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
-      writeUncompressedDataNew(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
+    std::cout << "writing uncompressed data" << std::endl;
+    writeUncompressedDataNew(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
+
+    // Write velocities
+    if( gen.velocities ){
+      vel.writeVelocities(gen.path_2_output+"velocities.dat");
     }
-    if( gen.degraded_data ){
-      std::cout << "writing degraded data" << std::endl;
-      writeCompressedData(gen.path_2_output,lsst,mother,all_filters_full_raw,all_filters_sampled_raw);
+
+    // Writing start and end points of each light curve on the magnification map
+    if( gen.start_end ){
+      std::cout << "writing start and end points" << std::endl;
+      FILE* fh_points = fopen((gen.path_2_output+"xy_start_end.dat").c_str(),"w");
+      for(int i=0;i<mother.Ncurves;i++){
+	fprintf(fh_points,"%8.3f %8.3f %8.3f %8.3f\n",mother.A[i].x,mother.A[i].y,mother.B[i].x,mother.B[i].y);
+      }
+      fclose(fh_points);
     }
 
     // Write file with generic parameters, necessary to convert the x-values of the theoretical light curves to time

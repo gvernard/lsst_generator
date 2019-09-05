@@ -9,7 +9,7 @@ lsstParameters::lsstParameters(const std::string filename){
   std::ifstream fin(filename);
   fin >> root;
   
-  this->tmax = root["vel"]["years"].asDouble()*365.25; // maximum length of observations in days
+  this->tmax = root["lsst"]["years"].asDouble()*365.25; // maximum length of observations in days
   
   // read the dates file for each filter
   std::string path_2_dates = root["path_2_dates"].asString();
@@ -47,12 +47,9 @@ lsstParameters::lsstParameters(const std::string filename){
   }
   this->tmin = tmin;
   
-  this->errbase[0] = root["errbase"][0].asDouble();
-  this->errbase[1] = root["errbase"][1].asDouble();
-  this->errbase[2] = root["errbase"][2].asDouble();
-  this->errbase[3] = root["errbase"][3].asDouble();
-  this->errbase[4] = root["errbase"][4].asDouble();
-  this->errbase[5] = root["errbase"][5].asDouble();
+  for(int i=0;i<this->filters.size();i++){
+    this->errbase[i] = root["lsst"]["errbase"+this->filters[i]].asDouble();
+  }
 }
 
 genericParameters::genericParameters(const std::string filename){
@@ -72,11 +69,10 @@ genericParameters::genericParameters(const std::string filename){
     this->lrest.push_back( lrest[j].asDouble() );
   }
   
-  this->Nlc           = root["output"]["Nlc"].asInt();
+  this->Nlc           = root["output"]["numlc"].asInt();
   this->seed          = root["output"]["seed"].asInt();
-  this->full_data     = root["output"]["full_data"].asBool();
-  this->degraded_data = root["output"]["degraded_data"].asBool();
   this->velocities    = root["output"]["velocities"].asBool();
+  this->start_end     = root["output"]["start_end"].asBool();
   this->path_2_output = root["path_2_output"].asString();
 }
 
@@ -84,7 +80,7 @@ velocityParameters::velocityParameters(const std::string filename){
   Json::Value root;
   std::ifstream fin(filename);
   fin >> root;
-  Json::Value vel = root["vel"];
+  Json::Value vel = root["system"];
   
   this->ra         = vel["ra"].asDouble();
   this->dec        = vel["dec"].asDouble();
