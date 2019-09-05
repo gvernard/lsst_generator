@@ -87,9 +87,9 @@ os.remove(outDir+"/opsim_Pass_filter_fiveSigmaDepth_observationStartMJD_USER.npz
 print(">>>>>>>>>>>>>>>>>> Write json input for the GERLUMPH part <<<<<<<<<<<<")
 out = myinput
 
-out["system"]["Ds"]  = Ds
-out["system"]["Dl"]  = Dl
-out["system"]["Dls"] = Dls
+out["system"]["Ds"]  = round(Ds,4)
+out["system"]["Dl"]  = round(Dl,4)
+out["system"]["Dls"] = round(Dls,4)
 out["path_2_dates"]  = myinput["path_to_out"] + str(myinput["outdir"]) + "/output/"
 out["path_2_custom"] = myinput["path_to_out"] + str(myinput["outdir"]) + "/custom/"
 out["path_2_output"] = myinput["path_to_out"] + str(myinput["outdir"]) + "/output/"

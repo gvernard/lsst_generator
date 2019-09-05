@@ -114,9 +114,9 @@ std::vector<double> calculateRhalf(const std::string filename){
   std::vector<double> rhalfs;
   std::string profile_type = root["profile"]["type"].asString();
   if( profile_type == "parametric" ){
-    double s0 = root["profile"]["s0"].asDouble();
+    double r0 = root["profile"]["r0"].asDouble();
     for(int j=0;j<root["lrest"].size();j++){
-      double r = s0*pow(root["lrest"][j].asDouble()/root["profile"]["l0"].asDouble(),root["profile"]["n"].asDouble());
+      double r = r0*pow(root["lrest"][j].asDouble()/root["profile"]["l0"].asDouble(),root["profile"]["nu"].asDouble());
       rhalfs.push_back(r);
     }
   } else if( profile_type == "ssdisc" ){
@@ -153,7 +153,7 @@ std::vector<BaseProfile*> createProfilesFromInput(const std::string filename,dou
     if( profile_type == "parametric" ){
       for(int j=0;j<lrest.size();j++){
 	double l = lrest[j].asDouble();
-	double rhalf = root["profile"]["s0"].asDouble()*pow(l/root["profile"]["l0"].asDouble(),root["profile"]["n"].asDouble());
+	double rhalf = root["profile"]["r0"].asDouble()*pow(l/root["profile"]["l0"].asDouble(),root["profile"]["nu"].asDouble());
 	if( profile_shape == "uniform" ){
 	  profiles[j] = new UniformDisc(pixSizePhys,rhalf/0.707,incl,orient);
 	  //profiles[j] = new UniformDisc(pixSizePhys,rhalf,incl,orient);
@@ -210,9 +210,9 @@ std::vector<factoryProfilePars> createProfileParsFromInput(const std::string fil
 
   if( profile_pars.type == "parametric" ){
     profile_pars.pars_parametric = {
-      root["profile"]["s0"].asDouble(),
+      root["profile"]["r0"].asDouble(),
       root["profile"]["l0"].asDouble(),
-      root["profile"]["n"].asDouble()
+      root["profile"]["nu"].asDouble()
     };
   } else if( profile_pars.type == "ssdisc" ){
     profile_pars.pars_parametric = {
