@@ -72,7 +72,8 @@ int main(int argc,char* argv[]){
 
     // Rotate map (i.e. rotate the velocity vectors in an opposite way)
     for(int i=0;i<gen.Nlc;i++){
-      phi_vtot[i] -= gen.gamma_angle[i];
+      vel.tot[i].phi -= gen.gamma_angle[ii];
+      phi_vtot[i]    -= gen.gamma_angle[ii];
     }
 
 
@@ -80,6 +81,7 @@ int main(int argc,char* argv[]){
     std::cout << "setting light curves" << std::endl;
     LightCurveCollection mother(gen.Nlc,&emap);
     mother.createVelocityLocations(213,lsst.tmax,vtot,phi_vtot);
+
     //mother.createRandomLocations(213,1000);
     //    mother.A[0].x = 0;
     //    mother.A[0].y = 0;
