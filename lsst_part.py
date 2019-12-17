@@ -87,6 +87,7 @@ os.remove(outDir+"/opsim_Pass_filter_fiveSigmaDepth_observationStartMJD_USER.npz
 print(">>>>>>>>>>>>>>>>>> Write json input for the GERLUMPH part <<<<<<<<<<<<")
 out = myinput
 
+out["system"]["ra"]  = myinput["system"]["ra"]*15.0
 out["system"]["Ds"]  = round(Ds,4)
 out["system"]["Dl"]  = round(Dl,4)
 out["system"]["Dls"] = round(Dls,4)
