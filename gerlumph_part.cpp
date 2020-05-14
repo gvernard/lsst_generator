@@ -71,9 +71,10 @@ int main(int argc,char* argv[]){
 
 
     // Rotate map (i.e. rotate the velocity vectors in an opposite way)
+    // The maps are at 90-degrees from the shear orientation (2*phi = gamma_angle)
     for(int i=0;i<gen.Nlc;i++){
-      vel.tot[i].phi -= gen.gamma_angle[ii];
-      phi_vtot[i]    -= gen.gamma_angle[ii];
+      vel.tot[i].phi -= gen.gamma_angle[ii] - 90;
+      phi_vtot[i]    -= gen.gamma_angle[ii] - 90;
     }
 
 
